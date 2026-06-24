@@ -1,0 +1,22 @@
+{
+  "name": "memecoin-intel-bot",
+  "version": "1.0.0",
+  "description": "Memecoin tracking, alert, and community Discord bot",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "deploy-commands": "node src/deploy-commands.js",
+    "deploy-commands:guild": "node src/deploy-commands.js --guild"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "node-cron": "^3.0.3",
+    "undici": "^6.19.8"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}
