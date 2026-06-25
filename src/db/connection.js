@@ -1,6 +1,5 @@
 const path = require("path");
 const fs = require("fs");
-const Database = require("better-sqlite3");
 const config = require("../config");
 
 function ensureDirExists(filePath) {
@@ -9,12 +8,6 @@ function ensureDirExists(filePath) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
-
-ensureDirExists(config.databasePath);
-
-const db = new Database(config.databasePath);
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
 
 const schema = `
 CREATE TABLE IF NOT EXISTS users (
@@ -116,6 +109,35 @@ CREATE TABLE IF NOT EXISTS feed_subscriptions (
 );
 `;
 
-db.exec(schema);
+let realDb = null;
 
-module.exports = db;
+function getRealDb() {
+  if (realDb) {
+    return realDb;
+  }
+
+  const Database = require("better-sqlite3");
+
+  ensureDirExists(config.databasePath);
+
+  const instance = new Database(config.databasePath);
+  instance.pragma("journal_mode = WAL");
+  instance.pragma("foreign_keys = ON");
+  instance.exec(schema);
+
+  realDb = instance;
+  return realDb;
+}
+
+const lazyDb = new Proxy(
+  {},
+  {
+    get(target, property) {
+      const instance = getRealDb();
+      const value = instance[property];
+      return typeof value === "function" ? value.bind(instance) : value;
+    }
+  }
+);
+
+module.exports = lazyDb;
